@@ -1,6 +1,6 @@
-# Advent of Code 2024 Solutions by AE Employees
+# Advent of Code Solutions by AE Employees
 
-Welcome to the AE Advent of Code 2024 repository! This is a space for Advent of Code Solutions by AE employees for 2024
+Welcome to the AE Advent of Code repository! This is a space for Advent of Code Solutions by AE employees for 2024
 
 ## Contribution Guidelines
 
