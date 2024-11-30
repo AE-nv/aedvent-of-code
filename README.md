@@ -9,7 +9,7 @@ Welcome to the AE Advent of Code repository! This is a space for Advent of Code 
 
 2. **Organize Your Code:**  
    Place your solutions in a folder following this structure:  
-   `aedvent-code-2024/day <day-number>/<your-name> - <language>`  
+   `aedvent-code-<current-year>/day <day-number>/<your-name> - <language>`  
    For example:  
    `aedvent-code-2024/day 1/Kobe - C#`
 
