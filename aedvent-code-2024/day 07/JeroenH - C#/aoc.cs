@@ -61,6 +61,8 @@ readonly record struct Equation(long target, List<long> numbers)
                 int index = mask % n;
                 mask /= n;
                 result = operators[index](result, numbers[j]);
+                if (result > target)
+                    break;
             }
 
             if (result == target)
