@@ -1,4 +1,5 @@
 from copy import deepcopy
+import re
 
 def get_letter_from_grid(grid, x, y):
     if x < 0 or y < 0:
@@ -51,7 +52,7 @@ def do_next_action_and_give_next_guard(grid, guard, next_movements):
     elif next_up == '.' or next_up == 'X':
         grid[y][x] = 'X'
         return (next_y, next_x, movement, direction)
-    elif next_up == '#':
+    elif next_up == '#' or next_up=='O':
         next_direction, next_movement = next_movements[direction]
         return (y, x, next_movement, next_direction)
 
@@ -66,41 +67,21 @@ with open("input.txt", "r") as input:
             if x != -1:
                 guard = (y, x, lambda y, x: (y - 1, x), "up")
 
+    starting_guard = deepcopy(guard)
+    starting_grid = deepcopy(grid)
+
     next_movements = {"up": ("right", lambda y, x: (y, x + 1)),
                       "right": ("down", lambda y, x: (y + 1, x)),
                       "down": ("left", lambda y, x: (y, x - 1)),
                       "left": ("up", lambda y, x: (y - 1, x))}
 
     past_situations = []
-    potential_loop_inducers = []
     finished = False
     steps = 0
     while not finished:
         steps+=1
-        print(steps)
+        # print(steps)
         y, x, movement, direction = guard
-        grid_copy = deepcopy(grid)
-        guard_copy = deepcopy(guard)
-        past_situations_copy = set(past_situations)
-        hypothetical_obstacle_location = movement(y, x)
-        if get_letter_from_grid(grid_copy, hypothetical_obstacle_location[1], hypothetical_obstacle_location[0]) in ['X', '.']:
-            grid_copy[hypothetical_obstacle_location[0]][hypothetical_obstacle_location[1]] = '#'
-            hypothetical_loop_investigation_finished = False
-            hypothetical_loop_found = False
-            while not hypothetical_loop_investigation_finished:
-                past_situations_copy.add((guard_copy[0], guard_copy[1], guard_copy[3]))
-                next_guard = do_next_action_and_give_next_guard(grid_copy, guard_copy, next_movements)
-                if next_guard == None:
-                    hypothetical_loop_investigation_finished = True
-                elif (next_guard[0], next_guard[1], next_guard[3]) in past_situations_copy:
-                    hypothetical_loop_investigation_finished = True
-                    hypothetical_loop_found = True
-                else:
-                    guard_copy = next_guard
-
-            if hypothetical_loop_found:
-                potential_loop_inducers.append(hypothetical_obstacle_location)
-
         past_situations.append((y, x, direction))
         next_guard = do_next_action_and_give_next_guard(grid, guard, next_movements)
         if next_guard == None:
@@ -108,10 +89,36 @@ with open("input.txt", "r") as input:
         else:
             guard = next_guard
 
-    unique_locations_visited = 0
-    for l in grid:
-        unique_locations_visited += l.count('X')
-    print("P1: " + str(unique_locations_visited))
-    print("P2: " + str(len(potential_loop_inducers)))
+    unique_locations_visited = set()
+    for (y, x, _) in past_situations:
+        unique_locations_visited.add((y,x))
+    print(len(unique_locations_visited))
 
-    # TODO: brute-force esque... Take locations that are passed on the Part 1 solution and put an obstacle then re-run from start while checking for loops
+    loop_inducers = []
+    numbers_of_potential_obstacles_checked = 0
+    for obstacle_location in unique_locations_visited:
+        grid=deepcopy(starting_grid)
+        guard=deepcopy(starting_guard)
+
+        y, x = obstacle_location
+        grid[y][x] = 'O'
+        past_situations = set()
+        finished = False
+        steps = 0
+        while not finished:
+            steps += 1
+            # print(steps)
+            y, x, movement, direction = guard
+            past_situations.add((y, x, direction))
+            next_guard = do_next_action_and_give_next_guard(grid, guard, next_movements)
+            if next_guard == None:
+                finished = True
+            elif (next_guard[0], next_guard[1], next_guard[3]) in past_situations:
+                loop_inducers.append(obstacle_location)
+                finished = True
+            else:
+                guard = next_guard
+
+        numbers_of_potential_obstacles_checked+=1
+        print(numbers_of_potential_obstacles_checked)
+    print("P2: "+str(len(loop_inducers)))
