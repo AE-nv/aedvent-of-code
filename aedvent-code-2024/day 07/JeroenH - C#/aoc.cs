@@ -24,7 +24,7 @@ IEnumerable<Equation> ParseInput(Stream input)
         var result = long.Parse(span[..separator]);
         var numbers = span[(separator + 2)..];
         var list = new List<long>(numbers.Count(' ') + 1);
-        foreach (var range in Regex.EnumerateSplits(span[(separator + 2)..], " "))
+        foreach (var range in numbers.Split(" "))
         {
             list.Add(long.Parse(numbers[range]));
         }
