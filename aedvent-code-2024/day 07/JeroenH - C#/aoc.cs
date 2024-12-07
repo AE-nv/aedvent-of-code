@@ -2,14 +2,18 @@ using Operator = System.Func<long, long, long>;
 
 var stats = new Stats();
 var input = File.OpenRead("input.txt");
+
 Equation[] equations = ParseInput(input).ToArray();
-Operator[] operators1 = [Add, Multiply];
-Operator[] operators2 = [Add, Multiply, Concatenate];
 stats.Report("Init");
+
+Operator[] operators1 = [Add, Multiply];
 var part1 = equations.Where(e => e.IsValid(operators1)).Sum(e => e.target);
 stats.Report(1, part1);
+
+Operator[] operators2 = [Add, Multiply, Concatenate];
 var part2 = equations.Where(e => e.IsValid(operators2)).Sum(e => e.target);
 stats.Report(2, part2);
+
 IEnumerable<Equation> ParseInput(Stream input)
 {
     var sr = new StreamReader(input);
