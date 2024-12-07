@@ -11,7 +11,7 @@ var part1 = equations.Where(e => e.IsValid(operators1)).Sum(e => e.target);
 stats.Report(1, part1);
 
 Operator[] operators2 = [Add, Multiply, Concatenate];
-var part2 = equations.Where(e => e.IsValid(operators2)).Sum(e => e.target);
+var part2 = equations.AsParallel().Where(e => e.IsValid(operators2)).Sum(e => e.target);
 stats.Report(2, part2);
 
 IEnumerable<Equation> ParseInput(Stream input)
