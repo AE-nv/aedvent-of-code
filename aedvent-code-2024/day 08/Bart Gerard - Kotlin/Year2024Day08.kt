@@ -10,31 +10,20 @@ data class Year2024Day08(
     private fun findAntinodes(
         frequencies: Map<Char, List<Point2d>>,
         range: IntRange
-    ): MutableSet<Point2d> {
-        val antinodes = mutableSetOf<Point2d>()
-
-        for ((_, antennas) in frequencies) {
-            antennas.flatMap { antenna1 ->
-                antennas.filter { antenna2 -> antenna1 != antenna2 }
-                    .map { antenna2 -> antenna1 to antenna2 }
-            }
-                .forEach { (antenna1, antenna2) ->
+    ): Set<Point2d> = frequencies.flatMap { (_, antennas) ->
+        antennas.flatMap { antenna1 ->
+            antennas.filter { antenna2 -> antenna1 != antenna2 }
+                .flatMap { antenna2 ->
                     val vector = antenna2 - antenna1
 
-                    for (distance in range) {
-                        val antinode = antenna2 + (vector * distance)
-
-                        if (!grid.contains(antinode)) {
-                            break
-                        }
-
-                        antinodes.add(antinode)
-                    }
+                    range.asSequence()
+                        .map { i -> antenna2 + (vector * i) }
+                        .takeWhile { grid.contains(it) }
                 }
         }
 
-        return antinodes
     }
+        .toSet()
 
 }
 
