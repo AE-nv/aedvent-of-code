@@ -12,26 +12,68 @@ import (
 func main() {
 	part1Result := part1("input.txt")
 	fmt.Printf("Result part 1 = %v\n", part1Result)
+
+	part2Result := part2("input.txt")
+	fmt.Printf("Result part 2 = %v\n", part2Result)
 }
 
 func part1(filename string) int {
 	rules, updates := readInput(filename)
 	correct := [][]string{}
 	for _, update := range updates {
-		isCorrect := true
-		for _, rule := range rules {
-			if !isRuleAppplicable(rule, update) {
-				continue
-			}
-			if !isNumberBeforeOther(update, rule) {
-				isCorrect = false
-			}
-		}
-		if isCorrect {
+		c := isCorrect(update, rules)
+		if c {
 			correct = append(correct, update)
 		}
 	}
 	return getSumOfMiddles(correct)
+}
+
+func part2(filename string) int {
+	rules, updates := readInput(filename)
+	incorrect := [][]string{}
+	for _, update := range updates {
+		c := isCorrect(update, rules)
+
+		if !c {
+			incorrect = append(incorrect, update)
+		}
+	}
+	corrected := [][]string{}
+	for _, update := range incorrect {
+		corrected = append(corrected, correctUpdate(update, rules))
+	}
+	return getSumOfMiddles(corrected)
+}
+
+func isCorrect(update []string, rules [][]string) bool {
+	for _, rule := range rules {
+		if !isRuleAppplicable(rule, update) {
+			continue
+		}
+		if !isNumberBeforeOther(update, rule) {
+			return false
+		}
+	}
+	return true
+}
+
+func correctUpdate(update []string, rules [][]string) []string {
+	c := false
+	for !c {
+		for _, rule := range rules {
+			before := slices.Index(update, rule[0])
+			after := slices.Index(update, rule[1])
+			if before == -1 || after == -1 {
+				continue
+			}
+			if before > after {
+				update[before], update[after] = update[after], update[before]
+			}
+		}
+		c = isCorrect(update, rules)
+	}
+	return update
 }
 
 func getSumOfMiddles(updates [][]string) int {
