@@ -12,11 +12,13 @@ Maze maze = (
     where c != '.'
     select KeyValuePair.Create(new Coordinate(x, y), c - '0')).ToDictionary();
 stats.Report("Init");
+
 var part1 = (
     from c in maze.Keys
     where maze[c] == 0
     select GetScore1(maze, c)).Sum();
 stats.Report(1, part1);
+
 var part2 = (
     from c in maze.Keys
     where maze[c] == 0
