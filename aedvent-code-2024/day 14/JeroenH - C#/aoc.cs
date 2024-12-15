@@ -29,6 +29,12 @@ int Part2()
     do
     {
         n++;
+        // if (n > 7480)
+        // {
+        //     Console.Clear();
+        //     DrawImage(GetBounds(set, 30), set);
+        //     Thread.Sleep(10);
+        // }
         set.Clear();
         for (int i = 0; i < span.Length; i++)
         {
