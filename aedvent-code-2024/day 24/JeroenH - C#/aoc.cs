@@ -44,25 +44,25 @@ string Part2()
     var maxZ = wires.Keys.Where(x => x[0] == 'z').MaxBy(x => int.Parse(x[1..]));
     // identifies the wrong gates
     // inspired by https://www.reddit.com/r/adventofcode/comments/1hl698z/comment/m3kt1je/
-    var q =
+    // wrong gates:
+    // - all '^' gates with output != maxZ
+    // - all '^' gates connected to non 'x', 'y' or 'z' input/output
+    // - all '&' gates where both inputs are not 'x00' and a non-'|' gate connected
+    // - all '^' gates with a '|' gate connected to it
+
+    var wrong =
         from g in gates
         where g switch
         {
             (_, not '^', _, ['z', ..] output) => output != maxZ,
-            ([not ('x' or 'y' or 'z'), ..], '^', [not ('x' or 'y' or 'z'), ..], [not ('x' or 'y' or 'z'), ..]) => true,
-            (not "x00", '&', not "x00", _) => (
-                from s in gates
-                where s.IsConnectedTo(g) && s.@operator != '|'
-                select g).Any(),
-            (_, '^', _, _) => (
-                from s in gates
-                where s.IsConnectedTo(g) && s.@operator == '|'
-                select g).Any(),
+            ([<'x', ..], '^', [< 'x', ..], [< 'x', ..]) => true,
+            (not "x00", '&', not "x00", _) => gates.Where(s=> s.IsConnectedTo(g) && s.@operator is not '|').Any(),
+            (_, '^', _, _) => gates.Where(s=> s.IsConnectedTo(g) && s.@operator is '|').Any(),
             _ => false
         }
+        orderby g.output
         select g.output;
-    var wrong = q.ToHashSet();
-    return string.Join(",", wrong.OrderBy(x => x));
+    return string.Join(",", wrong.Distinct());
 }
 
 record struct Gate(string left, char @operator, string right, string output)
