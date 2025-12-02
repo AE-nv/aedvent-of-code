@@ -5,7 +5,7 @@ data class Year2025Day02(
 ) {
     companion object {
         val RANGE_PATTERN = "(\\d+)-(\\d+)".toRegex()
-        val PALINDROME = "(\\d+)\\1".toRegex()
+        val REPEATED_ONCE = "(\\d+)\\1".toRegex()
         val REPEATED_AT_LEAST_TWICE = "(\\d+)\\1+".toRegex()
 
         private fun String.toLongRanges() = RANGE_PATTERN.findAll(this)
@@ -16,7 +16,7 @@ data class Year2025Day02(
 
     constructor(input: String) : this(input.replace("\r", "").toLongRanges())
 
-    fun partOne() = filterByPattern(PALINDROME).sum()
+    fun partOne() = filterByPattern(REPEATED_ONCE).sum()
 
     fun partTwo() = filterByPattern(REPEATED_AT_LEAST_TWICE).sum()
 
