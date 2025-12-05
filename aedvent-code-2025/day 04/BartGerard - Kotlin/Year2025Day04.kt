@@ -1,114 +1,74 @@
 package aock2025
 
-data class Year2025Day04(
-    private val grid: Grid
+data class Year2025Day05(
+    private val freshIngredientIdRanges: List<LongRange>,
+    private val availableIngredientIdRanges: List<Long>
 ) {
-    constructor(input: String) : this(Grid(input))
+    companion object {
+        private val RANGE_PATTERN = "(\\d+)-(\\d+)".toRegex()
+        private fun String.toLongRanges() = RANGE_PATTERN.findAll(this)
+            .map { it.destructured }
+            .map { (start, end) -> start.toLong()..end.toLong() }
+            .toList()
 
-    fun partOne(): Int = grid.findMovableRolls().count()
+        private val NUMBER_PATTERN = "-?\\d+".toRegex()
+        private fun String.toLongs() = NUMBER_PATTERN.findAll(this)
+            .map { it.value.toLong() }
+            .toList()
 
-    fun partTwo(): Long {
-        var movedCount = 0L
+        private fun LongRange.length(): Long = last - first + 1
 
-        while (true) {
-            val movableRolls = grid.findMovableRolls()
-
-            if (movableRolls.count() == 0) {
-                return movedCount
+        private fun allIntersections(ranges: Collection<LongRange>): List<LongRange> {
+            if (ranges.isEmpty()) {
+                return emptyList()
             }
 
-            movableRolls.forEach { grid.moveRoll(it) }
-            movedCount += movableRolls.count()
+            val keyValues = buildSet {
+                addAll(ranges.map { it.first })
+                addAll(ranges.map { it.last + 1 })
+            }
+                .sorted()
+
+            if (keyValues.size == 1) {
+                return listOf(keyValues[0]..keyValues[0])
+            }
+
+            return (0..<keyValues.size)
+                .zipWithNext { i, j -> keyValues[i]..<keyValues[j] }
+        }
+
+        private fun Collection<LongRange>.usedIntersections(): List<LongRange> = allIntersections(this)
+            .filter { intersection -> this.any { it.contains(intersection.first) } }
+
+        private fun Collection<LongRange>.merge(): List<LongRange> {
+            val sortedIntersections = this.usedIntersections()
+
+            if (sortedIntersections.size <= 1) {
+                return sortedIntersections
+            }
+
+            val nonConsecutiveIndices = (1..<sortedIntersections.size)
+                .filter { sortedIntersections[it - 1].last + 1 != sortedIntersections[it].first() }
+
+            val borderIndices = buildList {
+                add(0)
+                addAll(nonConsecutiveIndices)
+                add(sortedIntersections.size)
+            }
+
+            return (0..<borderIndices.size)
+                .zipWithNext { i, j -> sortedIntersections[borderIndices[i]].first..sortedIntersections[borderIndices[j] - 1].last }
         }
     }
-}
 
-data class Vector2d(
-    val x: Int,
-    val y: Int
-) {
-    companion object {
-        val NORTH_WEST = Vector2d(-1, -1)
-        val NORTH = Vector2d(0, -1)
-        val NORTH_EAST = Vector2d(1, -1)
-        val EAST = Vector2d(1, 0)
-        val SOUTH_EAST = Vector2d(1, 1)
-        val SOUTH = Vector2d(0, 1)
-        val SOUTH_WEST = Vector2d(-1, 1)
-        val WEST = Vector2d(-1, 0)
+    constructor(input: String) : this(input.split("\n\n"))
+    constructor(input: List<String>) : this(
+        input[0].toLongRanges(),
+        input[1].toLongs()
+    )
 
-        val ORTHOGONAL_ADJACENT = listOf(
-            NORTH,
-            EAST,
-            SOUTH,
-            WEST
-        )
-        val DIAGONAL_ADJACENT = listOf(
-            NORTH_EAST,
-            SOUTH_EAST,
-            SOUTH_WEST,
-            NORTH_WEST
-        )
+    fun part1() = availableIngredientIdRanges.count { isFresh(it) }
+    fun part2() = freshIngredientIdRanges.merge().sumOf { it.length() }
 
-        val SURROUNDING = ORTHOGONAL_ADJACENT + DIAGONAL_ADJACENT
-    }
-}
-
-data class Point2d(
-    val x: Int,
-    val y: Int
-) {
-    fun neighbours(
-        directions: List<Vector2d>
-    ) = directions.map { this + it }
-
-    operator fun plus(v: Vector2d) = Point2d(x + v.x, y + v.y)
-}
-
-data class Dimension(
-    val width: Int,
-    val height: Int
-) {
-    fun contains(p: Point2d): Boolean = p.x in 0..<width && p.y in 0..<height
-}
-
-data class Grid(
-    val grid: List<MutableList<Char>>
-) {
-    companion object {
-        const val ROLLS_OF_PAPER = '@'
-        const val ACCESSED = 'x'
-    }
-
-    constructor(input: String) : this(input.replace("\r", "").lines().map { it.toMutableList() }.toMutableList())
-
-    fun dimension(): Dimension = Dimension(grid[0].size, grid.size)
-    fun contains(point: Point2d): Boolean = dimension().contains(point)
-
-    fun findAll(value: Char): List<Point2d> = grid.flatMapIndexed { row, line ->
-        line.indices.filter { column -> line[column] == value }
-            .map { column -> Point2d(column, row) }
-    }
-
-    fun at(row: Int, column: Int) = grid[row][column]
-    fun at(point: Point2d) = at(point.y, point.x)
-
-    fun set(point: Point2d, value: Char) {
-        grid[point.y][point.x] = value
-    }
-
-    fun findMovableRolls() = findAll(ROLLS_OF_PAPER).filter { point ->
-        point.neighbours(Vector2d.SURROUNDING)
-            .count { contains(it) && at(it) == ROLLS_OF_PAPER } < 4
-    }
-
-    fun findMovableRolls() = grid.findAll { it == ROLLS_OF_PAPER }
-        .filter { roll -> isMovableRoll(roll) }
-
-    fun isMovableRoll(roll: Point2d): Boolean = roll.neighbours(Vector2d.SURROUNDING)
-        .count { grid.contains(it) && grid.at(it) == ROLLS_OF_PAPER } < 4
-
-    fun moveRoll(roll: Point2d) {
-        grid.set(roll, ACCESSED)
-    }
+    private fun isFresh(ingredientId: Long) = freshIngredientIdRanges.any { it.contains(ingredientId) }
 }
