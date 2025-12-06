@@ -33,8 +33,7 @@ data class Year2025Day05(
                 return listOf(keyValues[0]..keyValues[0])
             }
 
-            return (0..<keyValues.size)
-                .zipWithNext { i, j -> keyValues[i]..<keyValues[j] }
+            return keyValues.zipWithNext { i, j -> i..<j }
         }
 
         private fun Collection<LongRange>.usedIntersections(): List<LongRange> = allIntersections(this)
@@ -56,8 +55,7 @@ data class Year2025Day05(
                 add(sortedIntersections.size)
             }
 
-            return (0..<borderIndices.size)
-                .zipWithNext { i, j -> sortedIntersections[borderIndices[i]].first..sortedIntersections[borderIndices[j] - 1].last }
+            return borderIndices.zipWithNext { i, j -> sortedIntersections[i].first..sortedIntersections[j - 1].last }
         }
     }
 
