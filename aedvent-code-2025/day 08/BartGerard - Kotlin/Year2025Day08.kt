@@ -81,7 +81,9 @@ private data class Point3d(
     val x: Double,
     val y: Double,
     val z: Double
-)
+) {
+    fun euclideanDistanceTo(p: shared.Point3d) = sqrt((x - p.x).pow(2) + (y - p.y).pow(2) + (z - p.z).pow(2))
+}
 
 private fun <T> Iterable<T>.distinctPairs() = sequence {
     val list = this@distinctPairs.toList()
